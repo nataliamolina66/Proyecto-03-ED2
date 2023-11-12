@@ -1,0 +1,81 @@
+//Definición de librerías a utilizar 
+#include <Arduino.h>
+#include <stdint.h>
+#include <config.h>
+#include <Wire.h>
+#include <Adafruit_NeoPixel.h>
+
+#define PIN  23
+#define NUMPIXELS  16
+Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB);
+#define LM75_ADDRESS 0x48
+#define TEMPERATURE_REFERENCE 29.0
+int previousTemperature = 0; 
+int boton = 0; 
+int boton2 = 0; 
+
+void setup() {
+  Wire.begin();
+  Serial2.begin(9600);
+  Serial.begin(9600);
+  pixels.begin(); 
+  pixels.clear();
+  pixels.setBrightness(255);
+
+}
+
+void loop() {
+
+boton = Serial2.read();
+if (boton == 1) {
+  pixels.setPixelColor(1, pixels.Color(0, 0, 255));
+  pixels.show();
+
+  Wire.beginTransmission(LM75_ADDRESS);
+  Wire.write(0x00);  // Registro de temperatura del LM75
+  Wire.endTransmission();
+
+  Wire.requestFrom(LM75_ADDRESS, 2);  // Se espera la lectura de 2 bytes
+
+  if (Wire.available() >= 2) {
+    byte msb = Wire.read();  // Byte más significativo
+    byte lsb = Wire.read();  // Byte menos significativo
+
+    int rawTemperature = ((msb << 8) | lsb) >> 7;  // Conversión a temperatura en grados Celsius
+    float adjustedTemperature = rawTemperature - TEMPERATURE_REFERENCE;
+    char temperaturaTiva[10]; 
+    dtostrf(adjustedTemperature, 4, 2, temperaturaTiva); // Convierte la temperatura en una cadena con 2 decimales
+    Serial2.print(temperaturaTiva); // Envía la temperatura como una cadena al puerto serie Serial2
+    Serial.print("Temperatura: ");
+    Serial.print(adjustedTemperature);  // Mostrar 1 decimal para mayor precisión
+    Serial.println(" grados Celsius");
+
+
+    // Verificar si el dato actual es diferente al anterior
+    if (adjustedTemperature != previousTemperature) {
+      // Encender el primer LED en verde (R=0, G=255, B=0)
+      pixels.setPixelColor(0, pixels.Color(0, 255, 0));
+      pixels.show();
+
+      // Esperar un breve momento
+      delay(500);
+
+      // Apagar la LED
+      pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+      pixels.show();
+    }
+
+    // Actualizar el valor anterior
+    previousTemperature = adjustedTemperature;
+    }
+  }
+  
+  boton2 = Serial2.read();
+ if (boton2 == 2){
+  pixels.setPixelColor(2, pixels.Color(255, 0, 0));
+  pixels.show();
+
+ }
+
+  delay(1000);
+}
