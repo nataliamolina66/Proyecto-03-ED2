@@ -1,0 +1,34 @@
+//Definición de librerías a utilizar 
+#include <Arduino.h>
+#include <stdint.h>
+#include <config.h>
+#include <Wire.h>
+#define LM75_ADDRESS 0x48
+#define TEMPERATURE_REFERENCE 29.0
+
+void setup() {
+  Wire.begin();
+  Serial.begin(9600);
+}
+
+void loop() {
+  Wire.beginTransmission(LM75_ADDRESS);
+  Wire.write(0x00);  // Registro de temperatura del LM75
+  Wire.endTransmission();
+
+  Wire.requestFrom(LM75_ADDRESS, 2);  // Se espera la lectura de 2 bytes
+
+  if (Wire.available() >= 2) {
+    byte msb = Wire.read();  // Byte más significativo
+    byte lsb = Wire.read();  // Byte menos significativo
+
+    int rawTemperature = ((msb << 8) | lsb) >> 7;  // Conversión a temperatura en grados Celsius
+    float adjustedTemperature = rawTemperature - TEMPERATURE_REFERENCE;
+
+    Serial.print("Temperatura: ");
+    Serial.print(adjustedTemperature, 1);  // Mostrar 1 decimal para mayor precisión
+    Serial.println(" grados Celsius");
+  }
+
+  delay(1000);
+}
