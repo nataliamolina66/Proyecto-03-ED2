@@ -66,7 +66,7 @@ void setup() {
 
   // Inicialización de la pantalla
   LCD_Init();
-  LCD_Clear(0x00);
+  LCD_Clear(0XFFFF);
 
   SPI.setModule(0);
   Serial.print("Initializing SD card...");
@@ -135,8 +135,7 @@ void loop() {
   Serial.println(" Grados Celsius");
 
   String text1 = info + " grados C";
-  LCD_Print(text1, 20, 100, 2, 0xffff, 0x421b); // Muestra la temperatura en la pantalla LCD
-  
+  LCD_Print(text1, 20, 100, 2, 0x00, 0xFFFF); // Muestra la temperatura en la pantalla LCD
   }
     delay(250);
 }
@@ -493,6 +492,11 @@ void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int 
       k = k + 2;
      } 
   }
+    
+    
+    }
+  digitalWrite(LCD_CS, HIGH);
+}
     
     
     }
