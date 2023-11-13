@@ -27,6 +27,8 @@ void setup() {
 void loop() {
 
 boton = Serial2.read();
+boton2 = Serial2.read();
+
 if (boton == 1) {
   pixels.setPixelColor(1, pixels.Color(0, 0, 255));
   pixels.show();
@@ -70,11 +72,9 @@ if (boton == 1) {
     }
   }
   
-  boton2 = Serial2.read();
  if (boton2 == 2){
   pixels.setPixelColor(2, pixels.Color(255, 0, 0));
   pixels.show();
-
  }
 
   delay(1000);
