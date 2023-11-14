@@ -21,16 +21,24 @@ void setup() {
   pixels.begin(); 
   pixels.clear();
   pixels.setBrightness(255);
+  colorWipe(173, 255, 0, 47); // Rojo
+  delay(1000);
+  pixels.clear();
 
 }
 
 void loop() {
 
 boton = Serial2.read();
-boton2 = Serial2.read();
+if (boton == 2){
+  pixels.setPixelColor(2, pixels.Color(255, 0, 0));
+  pixels.show();
+  delay (1000);
+  pixels.setPixelColor(2, pixels.Color(0, 0, 0));
+  pixels.show();
+ }
 
 if (boton == 1) {
-  pixels.setPixelColor(1, pixels.Color(0, 0, 255));
   pixels.show();
 
   Wire.beginTransmission(LM75_ADDRESS);
@@ -72,10 +80,50 @@ if (boton == 1) {
     }
   }
   
- if (boton2 == 2){
-  pixels.setPixelColor(2, pixels.Color(255, 0, 0));
+  void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause){
+  for(int j = 0; j < StrobeCount; j++) {
+    setAll(red, green, blue);
+    pixels.show();
+    delay(FlashDelay);
+    setAll(0, 0, 0);
+    pixels.show();
+    delay(FlashDelay);
+  }
+  delay(EndPause);
+}
+
+void showStrip() {
   pixels.show();
- }
+}
+
+void colorWipe(byte red, byte green, byte blue, int SpeedDelay) {
+  for(uint16_t i = 0; i < NUMPIXELS; i++) {
+    setPixel(i, red, green, blue);
+    pixels.show();
+    delay(SpeedDelay);
+  }
+}
+
+void colorWipeReverse(byte red, byte green, byte blue, int SpeedDelay) {
+  for(int i = NUMPIXELS - 1; i >= 0; i--) {
+    setPixel(i, red, green, blue);
+    pixels.show();
+    delay(SpeedDelay);
+  }
+}
+
+void setPixel(int Pixel, byte red, byte green, byte blue) {
+  pixels.setPixelColor(Pixel, pixels.Color(red, green, blue));
+}
+
+void setAll(byte red, byte green, byte blue) {
+  for(int i = 0; i < NUMPIXELS; i++) {
+    setPixel(i, red, green, blue); 
+  }
+  pixels.show();
+}
+
 
   delay(1000);
 }
+
