@@ -47,6 +47,8 @@ if (boton == 2){
   colorWipe(173, 255, 0, 47); // Rojo
   delay(1000);
   pixels.clear();
+  pixels.show();
+
  }
 
 if (boton == 1) {
@@ -54,6 +56,8 @@ if (boton == 1) {
   colorWipeReverse(255, 0, 0, 50); // Rojo
   delay(1000);
   pixels.clear();
+  pixels.show();
+
 
   Wire.beginTransmission(LM75_ADDRESS);
   Wire.write(0x00);  // Registro de temperatura del LM75
@@ -119,3 +123,7 @@ void setAll(byte red, byte green, byte blue) {
   }
   pixels.show();
 }
+
+
+
+
