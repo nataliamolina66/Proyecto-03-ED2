@@ -1,4 +1,3 @@
-//Encabezado
 #include <SPI.h>
 #include <SD.h>
 File myFile;
@@ -16,6 +15,7 @@ File myFile;
 #include "driverlib/rom.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
+
 #include "bitmaps.h"
 #include "font.h"
 #include "lcd_registers.h"
@@ -25,7 +25,7 @@ File myFile;
 #define LCD_RS PD_2
 #define LCD_WR PD_3
 #define LCD_RD PE_1
-int DPINS[] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};
+int DPINS[] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};  
 int pushButton1 = 31;
 int pushButton2 = 17;
 int flameDetected = 0;
@@ -49,27 +49,32 @@ void LCD_Print(String text, int x, int y, int fontSize, int color, int backgroun
 
 void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
 void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
-extern uint8_t fondotemperatura[];
 
+
+extern uint8_t fondo[];
+//***************************************************************************************************************************************
+// Inicialización
+//***************************************************************************************************************************************
 void setup() {
-  // Configuración del reloj y la comunicación serial
+  
   SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
+  Serial.begin(9600);
+  GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
+  Serial.println("Inicio");
+  LCD_Init();
+  LCD_Clear(0x00);
+  FillRect(0, 0, 319, 206, 0x421b);
+//LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
+//LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
+  LCD_Bitmap(0, 0, 320, 240, fondo);
+
   pinMode(pushButton1, INPUT_PULLUP);
   pinMode(pushButton2, INPUT_PULLUP);
-
   //Comenzar la comunicación serial 
   Serial.begin(9600);
-  Serial2.begin(9600); 
+  Serial2.begin(9600);
 
-  // Configuración de pines de E/S
-  GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
-
-  // Inicialización de la pantalla
-  LCD_Init();
-  LCD_Clear(0XFFFF);
-  LCD_Bitmap(0, 0, 320, 240, fondotemperatura);
-
-  SPI.setModule(0);
+   SPI.setModule(0);
   Serial.print("Initializing SD card...");
   pinMode(PE_3, OUTPUT);
   if (!SD.begin(PE_3)) {
@@ -78,12 +83,13 @@ void setup() {
   }
   Serial.println("initialization done.");
   Serial.println("done!");
-}
-
-
-void loop() {
   
-   //*PARTE 2: comunicación serial TIVA con ESP32*
+}
+//***************************************************************************************************************************************
+// Loop Infinito
+//***************************************************************************************************************************************
+void loop() {
+ //*PARTE 2: comunicación serial TIVA con ESP32*
   //Lectura 
   if (digitalRead(pushButton1) == LOW) {
     boton = 1;
@@ -135,17 +141,11 @@ void loop() {
   Serial.print(receivedTemperature, 2); // Imprime la temperatura con 2 decimales
   Serial.println(" Grados Celsius");
 
-  String text1 = info + " grados C";
+  String text1 = info;
   LCD_Print(text1, 20, 100, 2, 0x00, 0xFFFF); // Muestra la temperatura en la pantalla LCD
   }
     delay(250);
 }
-
-
-
-
-
-
 //***************************************************************************************************************************************
 // Función para inicializar LCD
 //***************************************************************************************************************************************
@@ -190,7 +190,7 @@ void LCD_Init(void) {
   LCD_DATA(0x08);
   //****************************************
   LCD_CMD(0x36);  // (MEMORYACCESS)
-  LCD_DATA(0b01111000);//0x40|0x80|0x20|0x08); // LCD_DATA(0x19);
+  LCD_DATA(0b01111000); // LCD_DATA(0x19);
   //****************************************
   LCD_CMD(0x3A); // Set_pixel_format (PIXELFORMAT)
   LCD_DATA(0x05); // color setings, 05h - 16bit pixel, 11h - 3bit pixel
@@ -255,8 +255,6 @@ void LCD_Init(void) {
   LCD_CMD(ILI9341_DISPON);    //Display on
   digitalWrite(LCD_CS, HIGH);
 }
-
-
 //***************************************************************************************************************************************
 // Función para enviar comandos a la LCD - parámetro (comando)
 //***************************************************************************************************************************************
